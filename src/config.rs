@@ -1,8 +1,12 @@
+#[cfg(feature = "rkyv")]
+use rkyv::{Archive, Deserialize, Serialize};
+
 const DEFAULT_MAX_BINS: u32 = 2048;
 const DEFAULT_ALPHA: f64 = 0.01;
 const DEFAULT_MIN_VALUE: f64 = 1.0e-9;
 
 /// The configuration struct for constructing a `DDSketch`
+#[cfg_attr(feature = "rkyv", derive(Archive, Deserialize, Serialize))]
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Config {
     pub max_num_bins: u32,

@@ -4,6 +4,9 @@ use std::fmt;
 use crate::config::Config;
 use crate::store::Store;
 
+#[cfg(feature = "rkyv")]
+use rkyv::{Archive, Deserialize, Serialize};
+
 type Result<T> = std::result::Result<T, DDSketchError>;
 
 /// General error type for DDSketch, represents either an invalid quantile or an
@@ -32,7 +35,8 @@ impl error::Error for DDSketchError {
 }
 
 /// This struct represents a [DDSketch](https://arxiv.org/pdf/1908.10693.pdf)
-#[derive(Clone)]
+#[cfg_attr(feature = "rkyv", derive(Archive, Deserialize, Serialize))]
+#[derive(Debug, Clone)]
 pub struct DDSketch {
     config: Config,
     store: Store,
@@ -107,7 +111,9 @@ impl DDSketch {
         } else if rank < self.zero_count + self.negative_store.count() {
             quantile = 0.0;
         } else {
-            let key = self.store.key_at_rank(rank - self.zero_count - self.negative_store.count());
+            let key = self
+                .store
+                .key_at_rank(rank - self.zero_count - self.negative_store.count());
             quantile = self.config.value(key);
         }
 
